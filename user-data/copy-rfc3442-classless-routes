@@ -1,0 +1,7 @@
+#!/bin/bash
+file="/etc/dhcp3/dhclient-exit-hooks.d/rfc3442-classless-routes"
+if [ ! -f $file ]
+then
+	cp /config/user-data/rfc3442-classless-routes /etc/dhcp3/dhclient-exit-hooks.d/
+	chmod 755 /etc/dhcp3/dhclient-exit-hooks.d/rfc3442-classless-routes
+fi

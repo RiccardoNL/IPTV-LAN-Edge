@@ -1,0 +1,37 @@
+#!/bin/vbash
+
+# Installeer het script dat de rfc3442-classless-routes na een firmware upgrade opnieuw zal activeren
+
+file="/config/scripts/post-config.d/copy-rfc3442-classless-routes"
+if [ ! -f $file ]
+then
+	echo Het script copy-rfc3442-classless-routes wordt geactiveerd.
+	cp /config/user-data/copy-rfc3442-classless-routes /config/scripts/post-config.d/
+	chmod 744 /config/scripts/post-config.d/copy-rfc3442-classless-routes
+fi
+
+# Installeer het script rfc3442-classless-routes om de IPTV route als kernel route te activeren
+
+file="/etc/dhcp3/dhclient-exit-hooks.d/rfc3442-classless-routes"
+if [ ! -f $file ]
+then
+	echo De rfc3442-classless-routes worden geactiveerd.
+	cp /config/user-data/rfc3442-classless-routes /etc/dhcp3/dhclient-exit-hooks.d/
+	chmod 755 /etc/dhcp3/dhclient-exit-hooks.d/rfc3442-classless-routes
+fi
+
+echo
+
+MAC_Address=$(ifconfig | grep -m 1 eth0 | awk '{print $5}' | awk -F':' '{print ""$1"-"$2"-"$3"-"$4"-"$5"-"$6""}')
+if [ $MAC_Address != '' ]
+then
+	echo "De EdgeRouter wordt nu geconfigureerd voor het netwerk van KPN."
+	sed -i 's,XX-XX-XX-XX-XX-XX,'"$MAC_Address"',' /config/user-data/config.boot
+	chmod 664 /config/user-data/config.boot
+	cp /config/user-data/config.boot /config/config.boot
+ 	echo "Om de configuratie te activeren wordt de EdgeRouter nu opnieuw opgestart."
+	reboot
+else
+	echo "De configuratie van de EdgeRouter is afgebroken."
+fi
+exit
